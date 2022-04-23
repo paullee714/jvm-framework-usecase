@@ -1,13 +1,13 @@
-package com.example.springbootmsa;
+package com.example.springbootmsacalculator;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SpringBootMsaApplication {
+public class SpringBootMsaCalculatorApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SpringBootMsaApplication.class, args);
+        SpringApplication.run(SpringBootMsaCalculatorApplication.class, args);
     }
 
 }
