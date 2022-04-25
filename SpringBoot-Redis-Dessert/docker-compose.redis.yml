@@ -1,0 +1,14 @@
+version: "3"
+services:
+
+  redis-docker:
+    image: redis:latest
+    command: redis-server --requirepass qwerqwer123 --port 6379
+    container_name: "docker-redis"
+    labels:
+      - "name=redis"
+      - "mode=standalone"
+    volumes:
+      - /Users/wool/Database-docker/data/redis:/data
+    ports:
+      - 6379:6379
