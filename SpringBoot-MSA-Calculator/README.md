@@ -1,5 +1,16 @@
 # SpringBoot로 만드는 어플리케이션을 MSA로 만들기까지
 
+## 목차
+- [어플리케이션 요구사항](#어플리케이션-요구사항)
+- [작성하기](#작성하기)
+    - [비즈니스로직 만들기](#비즈니스로직-만들기)
+    - [엔드포인트 만들기](#엔드포인트-만들기)
+    - [데이터 레이어](#데이터-레이어)
+    - [사용자 페이지 만들기](#사용자-페이지-만들기)
+- [기본적인 어플리케이션 구성하기](#기본적인-어플리케이션-구성하기)
+    - [기본적인 곱셈 도메인모델 만들어 테스트하기](#기본적인-곱셈-도메인모델-만들어-테스트하기)
+    - [Multiplication 도메인 모델과 인터페이스 작성하기](#multiplication-도메인-모델과-인터페이스-작성하기)
+
 ## 어플리케이션 요구사항
 - 사용자가 페이지에 접속할 때마다 두 자릿수 곱셈 보여주기
 - 사용자는 암산결과와 닉네임을 입력하고 전송
@@ -28,3 +39,38 @@
 
 ### 사용자 페이지 만들기
 - 사용자가 시스템과 인터렉션 할 수 있는 페이지 구성
+
+## 기본적인 어플리케이션 구성하기
+### 기본적인 곱셈 도메인모델 만들어 테스트하기
+- TDD는 기본적인 로직들 보다 테스트 코드를 먼저 작성함
+- 해당하는 테스트를 실패하게 만든 후, 성공하는 로직을 작성
+- 이런 과정을 거치면, 세세한 요구사항에 대해 생각하게 되기 때문에 요구사항이 명확 해 짐
+
+### Multiplication 도메인 모델과 인터페이스 작성하기
+- [Multiplication.java](src/main/java/com/example/springbootmsacalculator/domain/Multiplication.java) 도메인 모델 작성하기
+    - 도메인 모델을 통해서 어플리케이션에서 사용 할 모델을 작성 함
+    - `모델`이라함은 데이터베이스와 연관이 있을 수 있지만, 여기서 작성하는 `모델`은 실제 비즈니스와 연관되어있는 형태
+    - Multiplication 도메인모델은, 인수 2개, 곱셈 결과 1개를 가지고있는 모델
+
+- [MultiplicationService.java](src/main/java/com/example/springbootmsacalculator/service/MultiplicationService.java) 인터페이스 작성하기
+    - 서비스 인터페이스를 정의 함
+    - 테스트할 서비스 -> 여기서는 무작위 인수를 담은 Multiplication 객체 생성
+    - 여기서 사용 할 무작위 인수 2개를 만들어줄 [RandomGeneratorService.java](src/main/java/com/example/springbootmsacalculator/service/RandomGeneratorService.java) 인터페이스 추가
+    - 테스트 내에서 난수를 생성한다면 테스트 해야 할 부분에 집중하지 못하기때문에 따로 생성
+
+- [MultiplicationServiceTest.java](src/test/java/com/example/springbootmsacalculator/service/MultiplicationServiceTest.java) 서비스 테스트 작성하기
+    - 작성한 Multiplication 도메인모델, MultiplicationService 인터페이스를 기반으로 테스트코드 작성
+    - `@MockBean`을 통해서 당장 구현하지 않을 서비스[RandomGeneratorService.java](src/main/java/com/example/springbootmsacalculator/service/RandomGeneratorService.java)에 대해 `Mock객체`를 주입
+    - `MockitoBDD`를 통해서 BDD적용 -> `given` / `when` / `assert` 로 나누어 작성
+    - `@MockBean`이 주입되지 않은 `MultiplicationService`에 대하여 테스트코드 내에서 에러 발생
+        - 해결을 위해, `MultiplicationServiceImpl.java` 를 만들어 요구사항을 반영
+
+- [MultiplicaionServiceImpl.java](src/main/java/com/example/springbootmsacalculator/service/MultiplicationServiceImpl.java) 서비스 구현 작성하기
+    - 실제 요구사항이 들어가는 서비스 객체 작성
+    - `@Service` 어노테이션을 사용하여 서비스 객체로 등록
+    - `@Autowired` 어노테이션을 사용하여 의존관계 주입
+    - `@Override` 어노테이션을 사용하여 인터페이스에서 정의 한 메서드 구현
+- 테스트하기
+    - Intellij IDEA 에서 테스트 실행
+    - 프로젝트가 maven이라면 maven wrapper를 사용해서 `mvnw -Dtest=MultiplicationServiceTest test`로 실행
+    - 테스트 간 의존성 주입이나 빈을 찾지 못하는 에러가 난다면 Intellij의 Gradle 혹은 maven 설정에서 `빌드 및 실행`과 관련된 메뉴에서 `다음을 사용하여 테스트 실행` 항목을 Intellij 로 해주어 해결
