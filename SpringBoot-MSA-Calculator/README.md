@@ -10,6 +10,8 @@
 - [기본적인 어플리케이션 구성하기](#기본적인-어플리케이션-구성하기)
     - [기본적인 곱셈 도메인모델 만들어 테스트하기](#기본적인-곱셈-도메인모델-만들어-테스트하기)
     - [Multiplication 도메인 모델과 인터페이스 작성하기](#multiplication-도메인-모델과-인터페이스-작성하기)
+    - [Multiplication 객체에 사용되는 RandomGenerator 객체 테스트](#multiplication-객체에-사용되는-randomgenerator-객체-테스트)
+    - [RandomGeneratorImplTest와 MultiplicationServiceImplTest 작성](#randomgeneratorimpltest와-multiplicationserviceimpltest-작성)
 
 ## 어플리케이션 요구사항
 - 사용자가 페이지에 접속할 때마다 두 자릿수 곱셈 보여주기
@@ -74,3 +76,27 @@
     - Intellij IDEA 에서 테스트 실행
     - 프로젝트가 maven이라면 maven wrapper를 사용해서 `mvnw -Dtest=MultiplicationServiceTest test`로 실행
     - 테스트 간 의존성 주입이나 빈을 찾지 못하는 에러가 난다면 Intellij의 Gradle 혹은 maven 설정에서 `빌드 및 실행`과 관련된 메뉴에서 `다음을 사용하여 테스트 실행` 항목을 Intellij 로 해주어 해결
+
+### Multiplication 객체에 사용되는 RandomGenerator 객체 테스트
+- [MultiplicationService.java](src/main/java/com/example/springbootmsacalculator/service/MultiplicationService.java), [MultiplicaionServiceImpl.java](src/main/java/com/example/springbootmsacalculator/service/MultiplicationServiceImpl.java) 에서 계속 사용되고있는 난수생성객체인 `RandomGenerator`와 관련된 객체에 난수생성기능을 넣고 관련 객체들을 테스트
+
+- [RandomGeneratorServiceImpl.java](src/main/java/com/example/springbootmsacalculator/service/RandomGeneratorServiceImpl.java) 서비스 구현 작성하기
+    - `@Service` 어노테이션을 사용하여 서비스 객체로 등록
+    - `@Autowired` 어노테이션을 사용하여 의존관계 주입
+    - `@Override` 어노테이션을 사용하여 인터페이스에서 정의 한 메서드 구현
+    - `Random()` 객체를 사용해서 난수생성로직 생성
+- [RandomGeneratorServiceTest.java](src/test/java/com/example/springbootmsacalculator/service/RandomGeneratorServiceTest.java) 테스트 객체 작성하기
+    - `@RunWith` 어노테이션을 사용하여 `MockitoJUnitRunner`를 사용하여 테스트 실행
+    - `@MockBean` 어노테이션을 사용하여 `RandomGenerator` 객체를 주입
+    - `@Test` 어노테이션을 사용하여 테스트 실행
+    - `@MockitoBDD`를 사용하여 BDD적용
+    - `given` / `when` / `assert` 로 나누어 작성
+- `@SpringBootTest` 사용?
+    - SpringRunner는 애플리케이션 컨택스트를 초기화하고 객체를 주입하는 역할
+    - 컨택스트는 캐시로 재사용 할 수 있어서 테스트 당 한번만 로딩
+    - 단순히 하나의 클래스(`RandomGeneratorService`) 테스트를 위해서는 컨택스트 로딩이 필요하지 않음
+    - 여러 클래스간의 상호작용을 확인하는 통합테스트에서 `@SpringBootTest` 사용하는 것이 효율적임
+
+### RandomGeneratorImplTest와 MultiplicationServiceImplTest 작성
+- [RandomGeneratorImplTest.java](src/test/java/com/example/springbootmsacalculator/service/RandomGeneratorImplTest.java) 테스트 객체 작성하기
+- [MultiplicationServiceImplTest.java](src/test/java/com/example/springbootmsacalculator/service/MultiplicationServiceImplTest.java) 테스트 객체 작성하기
