@@ -9,11 +9,11 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-public class RequestWrapper extends HttpServletRequestWrapper {
+public class RequestServletWrapper extends HttpServletRequestWrapper {
 
     private String requestData = null;
 
-    public RequestWrapper(HttpServletRequest request) {
+    public RequestServletWrapper(HttpServletRequest request) {
 
         super(request);
 

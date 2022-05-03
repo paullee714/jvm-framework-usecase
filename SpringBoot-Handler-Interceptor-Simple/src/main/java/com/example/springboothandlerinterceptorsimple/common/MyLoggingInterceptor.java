@@ -1,7 +1,6 @@
 package com.example.springboothandlerinterceptorsimple.common;
 
 
-import java.io.DataInput;
 import java.util.Map;
 import java.util.Objects;
 
@@ -16,9 +15,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
-public class LogInterceptor implements HandlerInterceptor {
+public class MyLoggingInterceptor implements HandlerInterceptor {
 
-    Logger logger = LoggerFactory.getLogger(LogInterceptor.class);
+    Logger logger = LoggerFactory.getLogger(MyLoggingInterceptor.class);
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)

@@ -12,13 +12,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RequestFilter implements Filter {
+public class RequestServletFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        HttpServletRequest wrappedRequest = new RequestWrapper((HttpServletRequest) request);
+        HttpServletRequest wrappedRequest = new RequestServletWrapper((HttpServletRequest) request);
 
         chain.doFilter(wrappedRequest, response);
 
