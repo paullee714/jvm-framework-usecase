@@ -9,14 +9,11 @@ import lombok.ToString;
 @Getter
 @ToString
 @EqualsAndHashCode
-public class Multiplication {
+public final class User {
 
-    // 인수
-    private final int factorA;
-    private final int factorB;
+    private final String alias;
 
-    Multiplication() {
-        this(0, 0);
+    private User() {
+        alias = null;
     }
-
 }
