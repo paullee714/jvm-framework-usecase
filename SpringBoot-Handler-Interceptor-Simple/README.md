@@ -34,6 +34,7 @@ Handler Interceptor는 위에서 설명 한 것 처럼 이미 생성되어있는
 4. HttpServlet 요청을 필터링 하는 서블릿 필터 생성
 
 아래는 나의 프로젝트 구조이다
+```
 .
 ├── HELP.md
 ├── README.md
@@ -65,10 +66,11 @@ Handler Interceptor는 위에서 설명 한 것 처럼 이미 생성되어있는
 └── example
 └── springboothandlerinterceptorsimple
 └── SpringBootHandlerInterceptorSimpleApplicationTests.java
-
+```
 
 
 ### Handler Interceptor 생성
+```java
 package com.example.springboothandlerinterceptorsimple.common;
 
 
@@ -108,10 +110,11 @@ public class MyLoggingInterceptor implements HandlerInterceptor {
         }
     }
 }
-
+```
 
 ### Handler Interceptor 등록
 Config 패키지를 만들어 아래와 같이 생성한다
+```java
 package com.example.springboothandlerinterceptorsimple.config;
 
 import com.example.springboothandlerinterceptorsimple.common.MyLoggingInterceptor;
@@ -133,11 +136,12 @@ public class Configuration implements WebMvcConfigurer {
     }
 
 }
-
+```
 
 ### Servlet Wrapper 생성
 request는 spring에서 한번만 읽을 수 있다
 이 request객체를 래핑하여 여러곳에서 읽을 수 있도록 처리 해 주자
+```java
 package com.example.springboothandlerinterceptorsimple.common;
 
 import java.io.IOException;
@@ -223,12 +227,13 @@ public class RequestServletWrapper extends HttpServletRequestWrapper {
     }
 
 }
-
+```
 - HttpServletRequest객체를 받아서 문자열로 추출하는 생성자를 만든다
     - `StringReader reader = new StringReader(requestData);`
 - read(), setReadListener(), isFinished(), isReady()가 구현된 InputStream을 재정의
 
 ### Servlet Filter 생성
+```java
 package com.example.springboothandlerinterceptorsimple.common;
 
 import java.io.IOException;
@@ -256,11 +261,13 @@ public class RequestServletFilter implements Filter {
     }
 
 }
+```
 - 요청은 래퍼 개체를 사용하여 래핑되고 이 래퍼 개체는 필터 체인으로 전달 됨
 - HttpServletRequest 객체를 읽을 때 구체적으로 언급하지 않더라도 래퍼 객체를 읽음(MyLoggingInterceptor 클래스)
 
 ### Controller 생성
 api endpoint를 생성 해서 request를 받아 줄 수 있는 controller 클래스를 생성한다
+```java
 package com.example.springboothandlerinterceptorsimple.controller;
 
 import org.springframework.web.bind.annotation.*;
@@ -280,7 +287,7 @@ public class MyTestController {
         return request;
     }
 }
-
+```
 
 
 ## 요청 테스트하기
@@ -289,19 +296,25 @@ public class MyTestController {
 - `test-one` : GET
 - `test-two` : POST
 
-1.  GET - `localhost:8080/test-one?id=1&name=wool`
+1. GET - `localhost:8080/test-one?id=1&name=wool`
     - 결과
+      ```
       INFO 14244 --- [nio-8080-exec-7] c.e.s.common.MyLoggingInterceptor        : 요청 정보: id=1&name=wool
       INFO 14244 --- [nio-8080-exec-7] c.e.s.common.MyLoggingInterceptor        : 요청 URL: http://localhost:8080/test-one
+      ```
 
 2. POST - `localhost:8080/test-two`
-   body : `application/json'`
+   ```
+   body : application/json
    {
    "id":1,
    "name":"wool",
    "phone":"01012341234",
    "mail":"hello@mail.com"
    }
+   ```
     - 결과
+      ```
       INFO 14244 --- [nio-8080-exec-9] c.e.s.common.MyLoggingInterceptor        : 요청 정보: {id=1, name=wool, phone=01012341234, mail=hello@mail.com}
       INFO 14244 --- [nio-8080-exec-9] c.e.s.common.MyLoggingInterceptor        : 요청 URL: http://localhost:8080/test-two
+      ```
