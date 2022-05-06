@@ -6,10 +6,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@RequiredArgsConstructor
 @Getter
-@ToString
+@RequiredArgsConstructor
 @EqualsAndHashCode
+@ToString
 public final class MultiplicationResultAttempt {
 
     private final User user;

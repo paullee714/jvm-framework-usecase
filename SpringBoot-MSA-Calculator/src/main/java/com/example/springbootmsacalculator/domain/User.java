@@ -1,14 +1,14 @@
 package com.example.springbootmsacalculator.domain;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
-@RequiredArgsConstructor
+import java.util.Objects;
+
+
 @Getter
-@ToString
+@RequiredArgsConstructor
 @EqualsAndHashCode
+@ToString
 public final class User {
 
     private final String alias;

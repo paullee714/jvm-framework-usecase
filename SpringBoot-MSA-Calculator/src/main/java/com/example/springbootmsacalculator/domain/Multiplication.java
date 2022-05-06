@@ -1,14 +1,16 @@
 package com.example.springbootmsacalculator.domain;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Getter;
 import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
-@RequiredArgsConstructor
+import java.util.Objects;
+
 @Getter
-@ToString
+@RequiredArgsConstructor
 @EqualsAndHashCode
+@ToString
 public class Multiplication {
 
     // 인수
