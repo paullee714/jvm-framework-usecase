@@ -1,0 +1,27 @@
+version: "3"
+services:
+  mysql-docker:
+    image: arm64v8/mariadb
+    ports:
+      - "3306:3306"
+    environment:
+      TZ: Asia/Seoul
+      MYSQL_ROOT_PASSWORD: qwerqwer123
+      MYSQL_DATABASE: rediswithspring
+      MYSQL_USER: paul
+      MYSQL_PASSWORD: qwerqwer123
+    container_name: "docker-maria"
+    volumes:
+      - ./example-docker-data/maria:/var/lib/mysql
+
+  redis-docker:
+    image: redis:latest
+    command: redis-server --port 6379
+    container_name: "docker-redis"
+    volumes:
+      - ./example-docker-data/redis:/data
+    labels:
+      - "name=redis"
+      - "mode=standalone"
+    ports:
+      - 6379:6379
