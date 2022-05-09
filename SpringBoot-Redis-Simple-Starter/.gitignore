@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+## custom Data with Docker
+example-docker-data

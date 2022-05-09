@@ -24,7 +24,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    runtimeOnly 'mysql:mysql-connector-java'
+//    runtimeOnly 'mysql:mysql-connector-java'
+//    runtimeOnly 'com.h2database:h2' // H2
+//    runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc' // MSSQL
+//    runtimeOnly 'org.postgresql:postgresql' // PostgreSQL
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client' // MariaDB
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
