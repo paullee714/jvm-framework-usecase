@@ -209,3 +209,98 @@ public class TeamController {
   - Eureka Server 실행
   - MSA-Player 혹은 MSA-NBATEAM 실행 (Eureka Client)
   - 서비스 끼리의 실행순서는 상관없지만, `Eureka Server`가 `Client`보다 항상 먼저 실행되어야 한다
+
+
+## API Gateway 설정하고 실행하기
+- `MSA-Player`와 `MSA-NBATeam`는 서로 다른 포트의 서버에서 실행중에 있다
+- `Eureka`는 이 두 서버를 관리하고 등록하여 볼 수 있다
+- MSA로 구성한 서버의 개수가 늘어나면서 port 관리와 등록, 인증절차가 매우 까다로워지는 현상이 있다
+- 이 어려움을 API Gateway가 해소 해 준다
+
+### 용어설명
+- Route : 목적지의 URI, 조건, Filter 등을 이용하여 어느곳으로 Routing 될 지 명시
+- Predicate : 경로의 조건 (`/team/**`) -> URI가 team 이하의 모든 곳
+- Filter : Request/Response 되는 객체를 특정 필터를 거치게 설정 함으로써 헤더 조작 및 객체수정, 로그파일 작성 등을 할 수 있다
+
+### API Gateway application.yml
+```yaml
+spring:
+  application:
+    name: GATEWAY-SERVER
+
+server:
+  port: 8000
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+```
+- gateway도 Eureka에 등록 될 서비스 중 하나이기 때문에 다른 서비스들과 동일하게 eureka의 설정을 적어준다
+- 이부분은 마찬가지로 SpringBoot Starter Class에도 적용 해준다
+
+### SpringBoot Starter @EnableEurekaClient
+```java
+package com.example.springcloudgateway;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+
+@SpringBootApplication
+@EnableEurekaClient
+public class SpringCloudGatewayApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(SpringCloudGatewayApplication.class, args);
+    }
+
+}
+```
+- `@EnableEurekaClient` 어노테이션으로 Eureka 서버에 등록 해준다
+
+### Gateway 실행 및 Eureka Server, client 연동
+- 우리는 모든 서비스를 Gateway를 통해서 접근 하게 해 줄것이다
+- 이를 위해서 앞서 설명한 `route`, `filter`, `predicate` 를 설정 해 주려고 한다
+- `Configuration Class`를 작성해서 정보를 넣을수도 있고, `application.yml`에 작성해서 정보를 넣어주어도 된다
+
+### Gateway 설정 - yml
+- gateway 서버의 `application.yml` 파일에 아래와같이 cloud.gateway 설정을 추가 해준다
+  ```yaml
+  spring:
+    application:
+      name: GATEWAY-SERVER
+    cloud:
+      gateway:
+        routes:
+          - id: NBATEAM-SERVER
+            uri: lb://NBATEAM-SERVER
+            predicates:
+              - Path=/team/**
+
+          - id: PLAYER-SERVER
+            uri: lb://PLAYER-SERVER
+            predicates:
+              - Path=/player/**
+
+  ```
+  - 각각의 uri에, NBATEAM-SERVER 혹은 PLAYER-SERVER 대신 실행하고있는 서버와 포트를 합쳐서 적어주어도 된다
+  - 하지만 `Eureka` 서버에 등록을 해 놓았기 때문에 해당하는 서버의 `application name`으로 접근이 가능하다
+
+### 실행
+- API Gateway는 Reuqest, Response를 한곳에서 모아서 통신을 해 주는 역할을 하기 때문에 관련된 서버들이 모두 정상으로 실행이 되고 있어야한다
+- 실행순서
+  1. Eureka 서버 실행
+  2. Eureka Client 실행 (Player, Team, ...etc)
+  3. API Gateway 실행
+- 실행 확인
+  - Eureka local 실행서버 (localhost:8761) 으로 접속
+  - Eureka Client(Player, Team, ...) 등록 확인
+  - API GateWay 등록 확인
+  - API Gateway가 8000 포트로 열려있기 때문에, 8000포트로 서비스 요청
+- 기존에 작성했었던 각각의 컨트롤러 주소로 요청을 한다
+  - Player Server uri : `/player/server-info`
+  - Team Server uri : `/team/server-info`
+  - 각각의 서버 포트를 몰라도, API Gateway가 8000 포트로 모아주고 있기 때문에 `localhost:8000`이 BASE_URL이 된다
