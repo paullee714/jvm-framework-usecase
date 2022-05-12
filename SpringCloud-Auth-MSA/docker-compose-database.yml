@@ -7,7 +7,7 @@ services:
     environment:
       TZ: Asia/Seoul
       MYSQL_ROOT_PASSWORD: qwerqwer123
-      MYSQL_DATABASE: deliveryapp
+      MYSQL_DATABASE: basketball
       MYSQL_USER: paul
       MYSQL_PASSWORD: qwerqwer123
     container_name: "docker-maria"
