@@ -8,11 +8,16 @@ spring:
           uri: lb://NBATEAM-SERVER
           predicates:
             - Path=/team/**
+            - Method=GET
 
         - id: PLAYER-SERVER
           uri: lb://PLAYER-SERVER
           predicates:
             - Path=/player/**
+            - name: Cookie
+              args:
+                name: customcookie
+                regexp: testcookie
 
 server:
   port: 8000
