@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: GATEWAY-SERVER
+  cloud:
+    gateway:
+      routes:
+        - id: NBATEAM-SERVER
+          uri: lb://NBATEAM-SERVER
+          predicates:
+            - Path=/team/**
+
+        - id: PLAYER-SERVER
+          uri: lb://PLAYER-SERVER
+          predicates:
+            - Path=/player/**
+
+server:
+  port: 8000
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
