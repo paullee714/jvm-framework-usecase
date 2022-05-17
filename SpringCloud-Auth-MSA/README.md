@@ -391,7 +391,7 @@ public class SpringCloudGatewayApplication {
 
 - 각 서버가 "GET", "POST", "PUT", "DELETE" 등 HTTP Requests 메서드 중 한가지만 사용 한다고 가정
 - 각 서버에서 특정 요청 만 받도록 설정 가능
-  - [Docs]("https://cloud.spring.io/spring-cloud-gateway/reference/html/#the-method-route-predicate-factory")
+    - [Docs]("https://cloud.spring.io/spring-cloud-gateway/reference/html/#the-method-route-predicate-factory")
 - 마찬가지로 `application.yml`을 아래와 같이 작업해서 요청 해 보려고 한다. (요청 컨트롤러 작성은 이전 글에서 확인)
 
   ```java
@@ -413,7 +413,9 @@ public class SpringCloudGatewayApplication {
   <img src="https://user-images.githubusercontent.com/25498314/168538899-f5315b1c-6f3d-4a30-b99c-8f12d608e3f8.png">
 
 ## Gateway Filter를 통한 Verification
+
 작성한 서버는 크게 두가지로 만들었다
+
 - Team을 관리하는 서비스
 - Player를 관리하는 서비스
 
@@ -421,6 +423,7 @@ public class SpringCloudGatewayApplication {
 인증절차를 가지고있는 `Filter` 클래스를 생성 해서 원하는 서비스에 인증을 붙여보도록 하자
 
 ### Gateway서버에 Filter Configuration Class 작성하기
+
 - Auth관련된 Filter를 만들어주기 위해서 Gateway서버에 `config` 패키지를 만들고 그 안에 `TeamAuthFilter`를 작성한다
 - 만들어줄 `TeamAuthFilter` 클래스는 `AbstractGatewayFilterFactory`를 상속받은 클래스이다
   ```java
@@ -468,9 +471,9 @@ public class SpringCloudGatewayApplication {
       }
   }
   ```
-  - 기억하고 넘어가야 할 것은 `ServerHttpRequest`와 `ServerHttpResponse`는 `Spring react`패키지에 있는 객체이다
-  - 임시 테스트를 위한 토큰은 [jwt.io]("https://jwt.io/")에서 발급하여 적어넣어주었다
-  - Token 발급 과정 및 자세한 인증과정은 생략했는데 앞/뒤로 해당하는 로직이 추가되면 실제로 인증로직과 비슷하게 갈 수 있다
+    - 기억하고 넘어가야 할 것은 `ServerHttpRequest`와 `ServerHttpResponse`는 `Spring react`패키지에 있는 객체이다
+    - 임시 테스트를 위한 토큰은 [jwt.io]("https://jwt.io/")에서 발급하여 적어넣어주었다
+    - Token 발급 과정 및 자세한 인증과정은 생략했는데 앞/뒤로 해당하는 로직이 추가되면 실제로 인증로직과 비슷하게 갈 수 있다
 
 - 작성 한 `TeamAuthFilter` 클래스를 이제 `Gateway`에 등록 해 주어야 한다
 - 작성 한 클래스는 Route 시에 filter 역할을 할 것 이기 때문데 `application.yml`에 원하는 service 내부에 filter로 추가 해 준다
@@ -488,8 +491,148 @@ public class SpringCloudGatewayApplication {
             - TeamAuthFilter
   #... 생략
   ```
-  - 앞서 말 했듯, Team서버에 접근 할 수 있는 사람은 관리자만 접속 할 수 있도록 세팅 하려고 했기 때문에 Team 서버에 Auth Filter를 걸어주었다
+    - 앞서 말 했듯, Team서버에 접근 할 수 있는 사람은 관리자만 접속 할 수 있도록 세팅 하려고 했기 때문에 Team 서버에 Auth Filter를 걸어주었다
 
 - 이제 해당하는 컨트롤러로 요청을 보내서 확인 해보면
-  - `header`에 `token`이 존재하지 않으면 -> `401 Unauthorized` 가 return
-  - `header`에 `token`이 존재하면 -> 발급받은 token과 일치하는지 확인 후 api 라우팅
+    - `header`에 `token`이 존재하지 않으면 -> `401 Unauthorized` 가 return
+    - `header`에 `token`이 존재하면 -> 발급받은 token과 일치하는지 확인 후 api 라우팅
+
+## Spring Cloud Config 서버
+
+- Spring Cloud MSA 구조에서는 여러 서비스들을 묶어 Gateway 서버와 Eureka 서버에 물려놓는다
+- 지금까지 만들어 본 MSA구조에서는 각각의 서버가 모두 다 `application.properties` 혹은 `application.yml` 을 가지고 있는 형태여서 각각의 서버가 자신의 프로퍼티를 관리했다
+- 모든 설정들을 하나의 서버에서 관리하고, 관련된 환경변수 및 정보들을 가져가서 관리하는 Config 서버를 작성 해 보자
+
+### Spring Config 관리 방법
+
+- 여러가지가 있지만, 대표적으로 github(gitlab), native file system이 있다
+- Github로 관리하는 방법을 선택 해 보려고 한다
+
+### Config서버 생성
+
+- SpringBoot Starter를 사용해 Config 서버를 만들어준다
+- Dependency에 `implementation 'org.springframework.cloud:spring-cloud-config-server'` 가 있는지 확인한다
+- Config서버 설정을 해 준다
+    - Spring Starter class 에 어노테이션 설정
+      ```java
+      package com.example.springcloudconfigserver;
+
+      import org.springframework.boot.SpringApplication;
+      import org.springframework.boot.autoconfigure.SpringBootApplication;
+      import org.springframework.cloud.config.server.EnableConfigServer;
+
+      @SpringBootApplication
+      @EnableConfigServer
+      public class SpringCloudConfigServerApplication {
+
+      public static void main(String[] args) {
+
+          SpringApplication.run(SpringCloudConfigServerApplication.class, args);
+
+         }
+      }
+
+      ```
+        - Springboot Application Starter Class 에 `@EnableConfigServer` 를 설정해서 Configure 서버로 명시한다
+    - github 작성
+        - 연동 할 정보를 담을 서버는 github서버이다
+        - [github config repo](https://github.com/paullee714/springcloud-config) 처럼 yaml 파일을 담아둔다
+    - properties 작성
+        - 다른 어플리케이션이 아닌 `Config Server`를 위한 `properties`를 작성
+      ```yaml
+      server:
+        port: 8888
+
+      spring:
+        application:
+          name: config-service
+
+      cloud:
+        config:
+          server:
+            git:
+              uri: https://github.com/paullee714/springcloud-config
+              #username: username123
+              #password: userpassword123
+      ```
+        - git과 연동할 것 이기 때문에 `cloud.config.server.git` 을 사용헀고, `uri`에 config 정보가
+          담긴 [github repo](https://github.com/paullee714/springcloud-config)를 추가한다
+        - 만약 repo가 `private`이라면 username, password 의 주석을 지워준다
+
+### Config 서버 실행 및 테스트
+
+- 위의 과정까지 완료되었다면, Config서버를 실행시켜서 `localhost:8888`이 실행이 되는지 확인하자
+- 문제가없이 실행된다면 [github config repo](https://github.com/paullee714/springcloud-config)에 올려 둔 yaml 파일들의 서비스 이름을 잘 기억 해주자
+    - 현재 `team-service`, `player-servcie` 사용
+- 각 서비스 이름과 환경에 맞게 `requests` 전송
+    - ex) 현재 `application.yml` 파일들을 환경별로 (dev, prod, test) 로 나누지 않았기 때문에 모두 같은 파일이 실행 될 것
+        - service name : "team-service"
+        - service_env : "test"
+        - request url 설명 : `"config서버주소:포트/{서비스이름}/{서버환경}"`
+        - request : "http://localhost:8888/team-service/test"
+        - response
+          ```json
+          {
+            "name": "player-service",
+            "profiles": [
+              "test"
+            ],
+            "label": null,
+            "version": "595c3dd0b45a5ed31804d04605800e3c27a0b743",
+            "state": null,
+            "propertySources": [
+              {
+                "name": "https://github.com/paullee714/springcloud-config/player-service.yml",
+                "source": {
+                  "server.port": 54293,
+                  "spring.application.name": "PLAYER-SERVER",
+                  "eureka.instance.instance-id": "${spring.application.name}-${random.uuid}",
+                  "eureka.client.register-with-eureka": true,
+                  "eureka.client.fetch-registry": true,
+                  "eureka.client.service-url.defaultZone": "http://localhost:8761/eureka",
+                  "token.key": "my_custom_token",
+                  "default.message": "player-service에서 사용될 properties"
+                }
+              },
+              {
+                "name": "https://github.com/paullee714/springcloud-config/application.yml",
+                "source": {
+                  "default.owner": "config-service's git folder",
+                  "default.content": ":) 안녕하세요 각각의 마이크로서비스에서 사용될 데이터입니다. :)"
+                }
+              }
+            ]
+          }
+          ```
+
+### Service Server에 Dependency 추가
+
+- Config서버와 연결 해 줄 서비스들에  `Dependency` 를 추가 해 주어야 한다
+- 우리가 가지고있는 team, player 서버에 아래 dependency를 추가 해주자
+    - 'org.springframework.cloud:spring-cloud-starter-config'
+    - 'org.springframework.cloud:spring-cloud-starter-bootstrap'
+
+### Service Server의 `application.yml` 내용 재작성
+
+- 이제 Config server가 있기 때문에 각각 서버에 작성 해 놓은 application.yml은 필요가 없다
+- 내부에 있는 내용들을 비워주고, Service서버에서 알아야 하는 Config server의 정보를 넣어주자
+  ```yaml
+  # player server
+  spring:
+    cloud:
+      config:
+        uri: http://localhost:8888
+        name: player-service
+        profile: test
+  ```
+
+  ```yaml
+  # team server
+  spring:
+    cloud:
+      config:
+        uri: http://localhost:8888
+        name: team-service
+        profile: test
+  ```
+- 모든 세팅이 완료되었으니 `Eureka`, `Player`, `Team`, `Config(이미실행중)`, `Gateway`를 실행시키고 이전에 했던 request가 잘 오는지 확인 해주자
