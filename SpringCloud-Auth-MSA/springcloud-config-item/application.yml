@@ -1,0 +1,4 @@
+# application.yml
+default:
+  owner: config-service's git folder
+  content: :) 안녕하세요 각각의 마이크로서비스에서 사용될 데이터입니다. :)

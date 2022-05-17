@@ -1,0 +1,21 @@
+server:
+  port: 41523
+
+spring:
+  application:
+    name: NBATEAM-SERVER
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}-${random.uuid}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+token:
+  key: my_custom_token
+
+default:
+  message: team-service에서 사용될 properties
