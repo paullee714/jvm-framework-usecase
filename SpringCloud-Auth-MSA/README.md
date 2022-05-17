@@ -411,3 +411,85 @@ public class SpringCloudGatewayApplication {
 
 - GET 이외의 요청을 하게되면 테스트 결과가 아래와 같이 404 Not Found로 나오게 된다
   <img src="https://user-images.githubusercontent.com/25498314/168538899-f5315b1c-6f3d-4a30-b99c-8f12d608e3f8.png">
+
+## Gateway Filter를 통한 Verification
+작성한 서버는 크게 두가지로 만들었다
+- Team을 관리하는 서비스
+- Player를 관리하는 서비스
+
+위의 Team에서는 Player의 여러 정보들을 관리해야하기 때문에 관리자들이 "인증"을 통해서 접근해야 한다.
+인증절차를 가지고있는 `Filter` 클래스를 생성 해서 원하는 서비스에 인증을 붙여보도록 하자
+
+### Gateway서버에 Filter Configuration Class 작성하기
+- Auth관련된 Filter를 만들어주기 위해서 Gateway서버에 `config` 패키지를 만들고 그 안에 `TeamAuthFilter`를 작성한다
+- 만들어줄 `TeamAuthFilter` 클래스는 `AbstractGatewayFilterFactory`를 상속받은 클래스이다
+  ```java
+  @Component
+  public class TeamAuthFilter extends AbstractGatewayFilterFactory<TeamAuthFilter.Config> {
+
+      public TeamAuthFilter() {
+          super(Config.class);
+      }
+
+      @Override
+      public GatewayFilter apply(Config config) {
+          return ((exchange, chain) -> {
+              ServerHttpRequest reactiveRequest = exchange.getRequest();
+              ServerHttpResponse reactiveResponse = exchange.getResponse();
+
+              if (!reactiveRequest.getHeaders().containsKey("token")) {
+                  return handleUnAutorized(exchange);
+              }
+
+              List<String> token = reactiveRequest.getHeaders().get("token");
+              String myToken = Objects.requireNonNull(token).get(0);
+
+              // 임시
+              String tmpAuthToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Indvb2wiLCJpYXQiOjE1MTYyMzkwMjJ9.U7HCQF6Yx6DM29I-w-0uzl6dJTKnJoF_XTao8jYxL4A";
+
+
+              if (!myToken.equals(tmpAuthToken)) {
+                  return handleUnAutorized(exchange);
+              }
+
+              return chain.filter(exchange);
+
+          });
+      }
+
+      private Mono<Void> handleUnAutorized(ServerWebExchange exchange) {
+          ServerHttpResponse reactResponse = exchange.getResponse();
+
+          reactResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
+          return reactResponse.setComplete();
+      }
+
+      public static class Config {
+      }
+  }
+  ```
+  - 기억하고 넘어가야 할 것은 `ServerHttpRequest`와 `ServerHttpResponse`는 `Spring react`패키지에 있는 객체이다
+  - 임시 테스트를 위한 토큰은 [jwt.io]("https://jwt.io/")에서 발급하여 적어넣어주었다
+  - Token 발급 과정 및 자세한 인증과정은 생략했는데 앞/뒤로 해당하는 로직이 추가되면 실제로 인증로직과 비슷하게 갈 수 있다
+
+- 작성 한 `TeamAuthFilter` 클래스를 이제 `Gateway`에 등록 해 주어야 한다
+- 작성 한 클래스는 Route 시에 filter 역할을 할 것 이기 때문데 `application.yml`에 원하는 service 내부에 filter로 추가 해 준다
+  ```yaml
+  #... 생략
+  cloud:
+    gateway:
+      routes:
+        - id: NBATEAM-SERVER
+          uri: lb://NBATEAM-SERVER
+          predicates:
+            - Path=/team/**
+            - Method=GET
+          filters:
+            - TeamAuthFilter
+  #... 생략
+  ```
+  - 앞서 말 했듯, Team서버에 접근 할 수 있는 사람은 관리자만 접속 할 수 있도록 세팅 하려고 했기 때문에 Team 서버에 Auth Filter를 걸어주었다
+
+- 이제 해당하는 컨트롤러로 요청을 보내서 확인 해보면
+  - `header`에 `token`이 존재하지 않으면 -> `401 Unauthorized` 가 return
+  - `header`에 `token`이 존재하면 -> 발급받은 token과 일치하는지 확인 후 api 라우팅

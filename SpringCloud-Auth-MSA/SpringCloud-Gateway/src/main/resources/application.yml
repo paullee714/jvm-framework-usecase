@@ -9,6 +9,8 @@ spring:
           predicates:
             - Path=/team/**
             - Method=GET
+          filters:
+            - TeamAuthFilter
 
         - id: PLAYER-SERVER
           uri: lb://PLAYER-SERVER
