@@ -27,7 +27,7 @@ public class TeamAuthFilter extends AbstractGatewayFilterFactory<TeamAuthFilter.
             ServerHttpResponse reactiveResponse = exchange.getResponse();
 
             if (!reactiveRequest.getHeaders().containsKey("token")) {
-                return handleUnAutorized(exchange);
+                return handleUnAuthorized(exchange);
             }
 
             List<String> token = reactiveRequest.getHeaders().get("token");
@@ -38,7 +38,7 @@ public class TeamAuthFilter extends AbstractGatewayFilterFactory<TeamAuthFilter.
 
 
             if (!myToken.equals(tmpAuthToken)) {
-                return handleUnAutorized(exchange);
+                return handleUnAuthorized(exchange);
             }
 
             return chain.filter(exchange);
@@ -46,7 +46,7 @@ public class TeamAuthFilter extends AbstractGatewayFilterFactory<TeamAuthFilter.
         });
     }
 
-    private Mono<Void> handleUnAutorized(ServerWebExchange exchange) {
+    private Mono<Void> handleUnAuthorized(ServerWebExchange exchange) {
         ServerHttpResponse reactResponse = exchange.getResponse();
 
         reactResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
