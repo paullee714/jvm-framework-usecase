@@ -239,3 +239,85 @@ public final class MultiplicationResultAttempt {
 
 }
 ```
+
+## 비즈니스 로직 레이어생성
+
+- 위에서 도메인 모델을 정의했으니, 비즈니스 로직을 생성하자
+- 비즈니스 로직에서 필요한 역할은 아래의 두가지이다
+    - 제출한 답안의 정답여부 확인
+    - 곱셈 만들어내기
+
+### MultiplicationService.java
+
+```java
+package com.example.springbootmsacalculator.service;
+
+
+import com.example.springbootmsacalculator.domain.Multiplication;
+import com.example.springbootmsacalculator.domain.MultiplicationResultAttempt;
+
+public interface MultiplicationService {
+
+    Multiplication createRandomMultiplication();
+
+    boolean checkAttempt(final MultiplicationResultAttempt resultAttempt);
+
+}
+```
+
+- 기존의 인터페이스에서, `checkAttempt`를 추가 해 주자
+- 곱셈결과를 판단하는 함수로 사용하고, 구현체에서 구현 해 주도록 하자
+
+### MultiplicationServiceImpl.java
+
+- 테스트를 진행하기 위해서 우선 항상 false가 되는 로직을 구현하자
+  ```java
+  @Override
+  public boolean checkAttempt(final MultiplicationResultAttempt resultAttempt) {
+
+      return false;
+  }
+  ```
+
+### 테스트코드 작성 -> MultiplicationServiceImplTest.java
+```java
+@Test
+public void checkCorrectAttemptTest() {
+    //given
+    Multiplication multiplication = new Multiplication(50, 60);
+    User user = new User("wool");
+    MultiplicationResultAttempt attempt = new MultiplicationResultAttempt(user, multiplication, 3000);
+
+    //when
+    boolean attemptResult = multiplicationServiceImpl.checkAttempt(attempt);
+
+    //assert
+    assertThat(attemptResult).isTrue();
+}
+
+@Test
+public void checFalseAttemptTest() {
+    //given
+    Multiplication multiplication = new Multiplication(50, 60);
+    User user = new User("wool");
+    MultiplicationResultAttempt attempt = new MultiplicationResultAttempt(user, multiplication, 3010);
+
+    //when
+    boolean attemptResult = multiplicationServiceImpl.checkAttempt(attempt);
+
+    //assert
+    assertThat(attemptResult).isFalse();
+}
+```
+- 기존의 테스트코드에 `Attempt` 와 관련된 함수들을 2개 생성하여 맞는경우, 틀릴경우를 분리 해 놓는다
+- `given`, `when`, `then` 으로 나누어서 주어진 값, 조건, 결과 로 나누어 작성한다
+
+### MultiplicationServiceImpl.java 작성
+- 아까 작성했던 구현체에 로직을 넣는다
+    ```java
+    @Override
+    public boolean checkAttempt(final MultiplicationResultAttempt resultAttempt) {
+
+        return resultAttempt.getResultAttempt() == resultAttempt.getMultiplication().getFactorA() * resultAttempt.getMultiplication().getFactorB();
+    }
+    ```
