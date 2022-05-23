@@ -2,18 +2,28 @@ package com.example.springbootmsacalculator.domain;
 
 import lombok.*;
 
+import javax.persistence.*;
 import java.util.Objects;
 
 
-@Getter
 @RequiredArgsConstructor
-@EqualsAndHashCode
+@Getter
 @ToString
+@EqualsAndHashCode
+@Entity
+@Table(name = "Users")
 public final class User {
+
+    @Id
+    @GeneratedValue
+    @Column(name = "USER_ID")
+    private Long id;
 
     private final String alias;
 
-    private User() {
+
+    protected User() {
+        id = null;
         alias = null;
     }
 }
