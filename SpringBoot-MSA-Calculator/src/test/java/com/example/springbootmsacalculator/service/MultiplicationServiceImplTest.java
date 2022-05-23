@@ -2,6 +2,8 @@ package com.example.springbootmsacalculator.service;
 
 
 import com.example.springbootmsacalculator.domain.Multiplication;
+import com.example.springbootmsacalculator.domain.MultiplicationResultAttempt;
+import com.example.springbootmsacalculator.domain.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
@@ -35,7 +37,36 @@ public class MultiplicationServiceImplTest {
         //assert
         assertThat(multiplication.getFactorA()).isEqualTo(50);
         assertThat(multiplication.getFactorB()).isEqualTo(30);
-        assertThat(multiplication.getResult()).isEqualTo(1500);
+//        assertThat(multiplication.getResult()).isEqualTo(1500);
     }
+
+    @Test
+    public void checkCorrectAttemptTest() {
+        //given
+        Multiplication multiplication = new Multiplication(50, 60);
+        User user = new User("wool");
+        MultiplicationResultAttempt attempt = new MultiplicationResultAttempt(user, multiplication, 3000);
+
+        //when
+        boolean attemptResult = multiplicationServiceImpl.checkAttempt(attempt);
+
+        //assert
+        assertThat(attemptResult).isTrue();
+    }
+
+    @Test
+    public void checFalseAttemptTest() {
+        //given
+        Multiplication multiplication = new Multiplication(50, 60);
+        User user = new User("wool");
+        MultiplicationResultAttempt attempt = new MultiplicationResultAttempt(user, multiplication, 3010);
+
+        //when
+        boolean attemptResult = multiplicationServiceImpl.checkAttempt(attempt);
+
+        //assert
+        assertThat(attemptResult).isFalse();
+    }
+
 
 }
