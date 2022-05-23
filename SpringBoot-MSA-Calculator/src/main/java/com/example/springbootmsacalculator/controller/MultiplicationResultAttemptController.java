@@ -25,9 +25,19 @@ public class MultiplicationResultAttemptController {
     }
 
     @PostMapping
-    ResponseEntity<ResultResponse> postResult(@RequestBody MultiplicationResultAttempt multiplicationResultAttempt) {
+    ResponseEntity<MultiplicationResultAttempt> postResult(@RequestBody MultiplicationResultAttempt multiplicationResultAttempt) {
+
+        boolean isCorrect = multiplicationService.checkAttempt(multiplicationResultAttempt);
+        MultiplicationResultAttempt attemptCp = new MultiplicationResultAttempt(
+                multiplicationResultAttempt.getUser(),
+                multiplicationResultAttempt.getMultiplication(),
+                multiplicationResultAttempt.getResultAttempt(),
+                isCorrect
+        );
+
+
         return ResponseEntity.ok(
-                new ResultResponse(multiplicationService.checkAttempt(multiplicationResultAttempt))
+                attemptCp
         );
     }
 

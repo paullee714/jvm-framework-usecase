@@ -4,6 +4,7 @@ import com.example.springbootmsacalculator.domain.Multiplication;
 import com.example.springbootmsacalculator.domain.MultiplicationResultAttempt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 @Service
 public class MultiplicationServiceImpl implements MultiplicationService {
@@ -25,7 +26,13 @@ public class MultiplicationServiceImpl implements MultiplicationService {
     @Override
     public boolean checkAttempt(final MultiplicationResultAttempt resultAttempt) {
 
-        return resultAttempt.getResultAttempt() == resultAttempt.getMultiplication().getFactorA() * resultAttempt.getMultiplication().getFactorB();
+        boolean correct = resultAttempt.getResultAttempt() == resultAttempt.getMultiplication().getFactorA() * resultAttempt.getMultiplication().getFactorB();
+
+        Assert.isTrue(!resultAttempt.isCorrect(), "채점한 상태로 보낼 수 없습니다!");
+
+        MultiplicationResultAttempt checkedAttempt = new MultiplicationResultAttempt(resultAttempt.getUser(), resultAttempt.getMultiplication(), resultAttempt.getResultAttempt(), correct);
+
+        return correct;
     }
 
 
