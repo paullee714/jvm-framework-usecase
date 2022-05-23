@@ -1,25 +1,5 @@
 # SpringBoot로 만드는 어플리케이션을 MSA로 만들기까지
 
-## 목차
-
-- [어플리케이션 요구사항](#어플리케이션-요구사항)
-- [작성하기](#작성하기)
-    - [비즈니스로직 만들기](#비즈니스로직-만들기)
-    - [엔드포인트 만들기](#엔드포인트-만들기)
-    - [데이터 레이어](#데이터-레이어)
-    - [사용자 페이지 만들기](#사용자-페이지-만들기)
-- [기본적인 어플리케이션 구성하기](#기본적인-어플리케이션-구성하기)
-    - [기본적인 곱셈 도메인모델 만들어 테스트하기](#기본적인-곱셈-도메인모델-만들어-테스트하기)
-    - [Multiplication 도메인 모델과 인터페이스 작성하기](#multiplication-도메인-모델과-인터페이스-작성하기)
-    - [Multiplication 객체에 사용되는 RandomGenerator 객체 테스트](#multiplication-객체에-사용되는-randomgenerator-객체-테스트)
-    - [RandomGeneratorImplTest와 MultiplicationServiceImplTest 작성](#randomgeneratorimpltest와-multiplicationserviceimpltest-작성)
-- [도메인 설계](#도메인-설계하기)
-    - [Lombok 패키지 설치](#Lombok-패키지-설치)
-    - [간단한 lombok 어노테이션 정리](#간단한-lombok-어노테이션-정리)
-    - [Multiplication Domain 객체 수정](#Multiplication-Domain-객체-수정)
-    - [User Domain 객체 추가](#User-Domain-객체-추가)
-    - [MultiplicationResultAttempt Doamin 객체 추가](#MultiplicationResultAttempt-Doamin-객체-추가)
-
 ## 어플리케이션 요구사항
 
 - 사용자가 페이지에 접속할 때마다 두 자릿수 곱셈 보여주기
