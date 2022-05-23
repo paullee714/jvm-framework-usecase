@@ -321,3 +321,237 @@ public void checFalseAttemptTest() {
         return resultAttempt.getResultAttempt() == resultAttempt.getMultiplication().getFactorA() * resultAttempt.getMultiplication().getFactorB();
     }
     ```
+
+## 프레젠테이션 레이어 - 컨트롤러 테스트 / 구현
+
+- 서비스와 도메인 객체들에대한 테스트를 완료했기때문에, 해당하는 로직들에 사용자가 접근 할 수 있는 API를 구현하고 테스트 하자
+
+### 간단한 컨트롤러 구현 - MultiplicationController
+```java
+package com.example.springbootmsacalculator.controller;
+
+
+import com.example.springbootmsacalculator.domain.Multiplication;
+import com.example.springbootmsacalculator.service.MultiplicationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/multiplications")
+public class MultiplicationController {
+
+    private final MultiplicationService multiplicationService;
+
+    @Autowired
+    public MultiplicationController(MultiplicationService multiplicationService) {
+        this.multiplicationService = multiplicationService;
+    }
+
+}
+```
+
+### 컨트롤러에 대한 테스트 - MultiplicationControllerTest
+```java
+package com.example.springbootmsacalculator.controller;
+
+import com.example.springbootmsacalculator.domain.Multiplication;
+import com.example.springbootmsacalculator.service.MultiplicationService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+
+@RunWith(SpringRunner.class)
+@WebMvcTest(MultiplicationController.class)
+public class MultiplicationControllerTest {
+
+    @MockBean
+    private MultiplicationService multiplicationService;
+
+    @Autowired
+    private MockMvc mvc;
+
+    private JacksonTester<Multiplication> json;
+
+    @BeforeEach
+    public void setUp() {
+        JacksonTester.initFields(this, new ObjectMapper());
+    }
+
+    @Test
+    public void getRandomMultiplicationTest() throws Exception {
+        //given
+        given(multiplicationService.createRandomMultiplication()).willReturn(new Multiplication(70, 20));
+
+        //when
+        MockHttpServletResponse response = mvc.perform(
+                        get("/multiplications/random")
+                                .accept(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        //then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.getContentAsString()).isEqualTo(json.write(new Multiplication(70, 20)).getJson());
+    }
+}
+```
+- `@WebMvcTest`는 스프링 어플리케이션 컨텍스트를 초기화한다
+  - MVC레이어와 관련된 설정만 불러와서 주입하기 때문에, `@SpringBootTest` 보다 간결하다
+  - `@SpringBootTest`는 실제 웹서버에 접근하지만, `@WebMvcTest`는 `MockMvc`에 접근한다
+- `@MockBean` 을 사용해서 우리가 만든 `MultiplicationService`와 같은 Mock을 만든다
+- 테스트코드에 요구사항을 먼저 넣는다
+  - `given`으로, 주어질 값들을 임의로 정한다 > 70, 20
+  - `/multiplications/random` 이라는 url으로 정하고, Response를 받아와서 `assertThat`에서 비교한다
+- 위의 테스트코드가 작성이 잘 되었는지 확ㅇ니하고, Controller를 마무리한다
+
+### Multiplication Controller 추가구현
+```java
+@GetMapping("/random")
+Multiplication getRandomMultiplication() {
+    return multiplicationService.createRandomMultiplication();
+}
+```
+
+### MultiplicationResultAttemptController - 결과를 감싸는작업
+- 사용자의 응답을 확인하고 채점결과를 반환하는 컨트롤러 작성
+- 답안과 채점결과 반환을 하나로 감싸는 클래스를 만들어 반환
+- 마찬가지로, `빈클래스 -> 테스트코드구현 -> 클래스 마무리` 순서로 작업
+```java
+package com.example.springbootmsacalculator.controller;
+
+import com.example.springbootmsacalculator.service.MultiplicationService;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/results")
+public class MultiplicationResultAttemptController {
+
+    private final MultiplicationService multiplicationService;
+
+    @Autowired
+    public MultiplicationResultAttemptController(MultiplicationService multiplicationService) {
+        this.multiplicationService = multiplicationService;
+    }
+
+    @RequiredArgsConstructor
+    @NoArgsConstructor(force = true)
+    @Getter
+    static final class ResultResponse {
+        private final boolean correct;
+    }
+}
+```
+- 위처럼 빈 컨트롤러 구현체를 만들고, API Endpoint작업을 할 준비를 마친다
+
+### MultiplicationResultAttemptControllerTest 작성
+```java
+package com.example.springbootmsacalculator.controller;
+
+import com.example.springbootmsacalculator.domain.Multiplication;
+import com.example.springbootmsacalculator.domain.MultiplicationResultAttempt;
+import com.example.springbootmsacalculator.domain.User;
+import com.example.springbootmsacalculator.service.MultiplicationService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
+@RunWith(SpringRunner.class)
+@WebMvcTest(MultiplicationResultAttemptController.class)
+public class MultiplicationResultAttemptControllerTest {
+
+    @MockBean
+    private MultiplicationService multiplicationService;
+
+    @Autowired
+    private MockMvc mvc;
+
+    private JacksonTester<MultiplicationResultAttempt> jsonResult;
+    private JacksonTester<MultiplicationResultAttemptController.ResultResponse> jsonResponse;
+
+    @BeforeEach
+    public void setUp() {
+        JacksonTester.initFields(this, new ObjectMapper());
+    }
+
+    @Test
+    public void postResultReturnCorrect() throws Exception {
+        genericParameterizedTest(true);
+    }
+
+    @Test
+    public void postResultReturnNotCorrect() throws Exception {
+        genericParameterizedTest(false);
+    }
+
+    void genericParameterizedTest(final boolean correct) throws Exception {
+        //given
+        given(multiplicationService.checkAttempt(any(MultiplicationResultAttempt.class))).willReturn(correct);
+
+        User user = new User("wool");
+        Multiplication multiplication = new Multiplication(50, 70);
+        MultiplicationResultAttempt attempt = new MultiplicationResultAttempt(user, multiplication, 3500);
+
+        //when
+        MockHttpServletResponse response = mvc.perform(post("/results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonResult.write(attempt).getJson()))
+                .andReturn().getResponse();
+
+        //then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.getContentAsString())
+                .isEqualTo(jsonResponse.write(new MultiplicationResultAttemptController.ResultResponse(correct)).getJson());
+    }
+}
+```
+- 테스트코드의 중요 로직 중 하나인 `genericparameterizedTest` 함수 구현
+  - given : 주어질 값들을 미리 정한다. 미리 정할 값들을 넣기 위한 변수들을 준비한다
+  - when : 주어진 값들을 가지고 http 요청을 전송하고 return값을 ㅂ다아옴
+  - then : assertThat으로 리턴값들을 테스트
+
+### MultiplicationResultAttemptController 마무리
+```java
+@PostMapping
+ResponseEntity<ResultResponse> postResult(@RequestBody MultiplicationResultAttempt multiplicationResultAttempt) {
+    return ResponseEntity.ok(
+            new ResultResponse(multiplicationService.checkAttempt(multiplicationResultAttempt))
+    );
+}
+```
+- 전송할 endpoint를 구현하고 컨트롤러 작성을 완료한다
