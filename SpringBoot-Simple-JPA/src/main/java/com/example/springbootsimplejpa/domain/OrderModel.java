@@ -9,10 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
@@ -36,6 +33,44 @@ public class OrderModel {
     private LocalDateTime createdAt;
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    /*
+    Listeners 추가
+     */
+    @PrePersist
+    public void prePersist() {
+        System.out.println(">>> prePersist");
+    }
+
+    @PostPersist
+    public void postPersist() {
+        System.out.println(">>> postPersist");
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        System.out.println(">>> preUpdate");
+    }
+
+    @PostUpdate
+    public void postUpdate() {
+        System.out.println(">>> postUpdate");
+    }
+
+    @PreRemove
+    public void preRemove() {
+        System.out.println(">>> preRemove");
+    }
+
+    @PostRemove
+    public void postRemove() {
+        System.out.println(">>> postRemove");
+    }
+
+    @PostLoad
+    public void postLoad() {
+        System.out.println(">>> postLoad");
+    }
 
 
 }
