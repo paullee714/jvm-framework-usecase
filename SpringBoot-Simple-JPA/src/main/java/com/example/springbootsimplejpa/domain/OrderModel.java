@@ -2,22 +2,20 @@ package com.example.springbootsimplejpa.domain;
 
 
 import com.sun.istack.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
 @Data
+@Builder
 @Entity
-@Table(name = "orders")
-public class OrderModel {
+@EntityListeners(value = {TimestampEntityListener.class})
+//@Table(name = "orders")
+public class OrderModel implements Auditable {
 
     @Id
     @GeneratedValue
@@ -29,33 +27,36 @@ public class OrderModel {
     @NotNull
     private String userMail;
 
-    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
-    @UpdateTimestamp
+
     private LocalDateTime updatedAt;
 
-    /*
-    Listeners 추가
-     */
-    @PrePersist
-    public void prePersist() {
-        System.out.println(">>> prePersist");
-    }
-
-    @PostPersist
-    public void postPersist() {
-        System.out.println(">>> postPersist");
-    }
+//    /*
+//    Listeners 추가
+//     */
+//    @PrePersist
+//    public void prePersist() {
+//        System.out.println(">>> prePersist");
+//    }
+//
+//    @PostPersist
+//    public void postPersist() {
+//        System.out.println(">>> postPersist");
+//        this.setCreatedAt(LocalDateTime.now());
+//        this.setUpdatedAt(LocalDateTime.now());
+//    }
 
     @PreUpdate
     public void preUpdate() {
         System.out.println(">>> preUpdate");
     }
 
-    @PostUpdate
-    public void postUpdate() {
-        System.out.println(">>> postUpdate");
-    }
+//    @PostUpdate
+//    public void postUpdate() {
+//        System.out.println(">>> postUpdate");
+//        this.setUpdatedAt(LocalDateTime.now());
+//    }
 
     @PreRemove
     public void preRemove() {
