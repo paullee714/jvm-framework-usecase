@@ -36,4 +36,26 @@ class AssociationRepositoryTest {
         assertThat(result.point).isEqualTo(0)
     }
 
+    @Test
+    fun AssociationRegistrationWithNoOverlap() {
+        // given
+        val association: Association = Association(1, AssociationName.KFC, "uuid-wool-1", 0)
+
+        // when
+        var result: Association? = null
+        associationRepository.findByUserUuidAndAssociateName(association.userUuid, association.associateName).let {
+            if (it != null) {
+                result = it
+            }
+        }
+        result = associationRepository.save(association)
+
+        // then
+        assertThat(result!!.id).isNotNull()
+        assertThat(result!!.id).isEqualTo(1)
+        assertThat(result!!.associateName).isEqualTo(AssociationName.KFC)
+        assertThat(result!!.userUuid).isEqualTo("uuid-wool-1")
+        assertThat(result!!.point).isEqualTo(0)
+    }
+
 }
