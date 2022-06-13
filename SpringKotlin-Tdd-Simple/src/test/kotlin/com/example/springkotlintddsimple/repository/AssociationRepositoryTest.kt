@@ -15,12 +15,12 @@ class AssociationRepositoryTest {
     lateinit var associationRepository: AssociationRepository
 
     @Test
-    fun AssociationRepositoryisNotNull() {
+    fun associationRepositoryisNotNull() {
         assertThat(associationRepository).isNotNull()
     }
 
     @Test
-    fun AssociationRepositoryRegistration() {
+    fun associationRepositoryRegistration() {
         // given
         val association: Association = Association(1, AssociationName.KFC, "uuid-wool-1", 0)
 
@@ -37,7 +37,7 @@ class AssociationRepositoryTest {
     }
 
     @Test
-    fun AssociationRegistrationWithNoOverlap() {
+    fun associationRegistrationWithNoOverlap() {
         // given
         val association: Association = Association(1, AssociationName.KFC, "uuid-wool-1", 0)
 
