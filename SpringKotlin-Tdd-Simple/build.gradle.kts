@@ -28,9 +28,13 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("com.google.code.gson:gson:2.9.0")
     compileOnly("org.projectlombok:lombok")
+    runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
     runtimeOnly("com.h2database:h2")
     annotationProcessor("org.projectlombok:lombok")
+    testCompileOnly("org.projectlombok:lombok:1.18.24")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.24")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
