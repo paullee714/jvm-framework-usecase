@@ -268,3 +268,46 @@ class AssociationRepositoryTest {
       MACDONALDS("MacDonalds"),
   }
   ```
+
+### AssociationRepositoryTest.kt 테스트하기 - 중복 제휴사 저장 방지로직 만들기
+
+- Repository 의 간단한 저장 로직은 생성이 된 듯 보인다
+- Repository 에서 제휴사를 저장하기 전, 제휴사가 있다면 중복으로 저장 할 이유가 없으므로 관련 검사 로직을 한번 만들어보자
+- 늘 그랫듯이, 테스트코드에서 우리가 사용 할 쿼리, 함수, 로직을 선언하자
+  ```kotlin
+  @Test
+  fun AssociationRegistrationWithNoOverlap() {
+      // given
+      val association: Association = Association(1, AssociationName.KFC, "uuid-wool-1", 0)
+
+      // when
+      var result: Association? = null
+      associationRepository.findByUserUuidAndAssociateName(association.userUuid, association.associateName).let {
+          if (it != null) {
+              result = it
+          }
+      }
+      result = associationRepository.save(association)
+
+      // then
+      assertThat(result!!.id).isNotNull()
+      assertThat(result!!.id).isEqualTo(1)
+      assertThat(result!!.associateName).isEqualTo(AssociationName.KFC)
+      assertThat(result!!.userUuid).isEqualTo("uuid-wool-1")
+      assertThat(result!!.point).isEqualTo(0)
+  }
+  ```
+    - `given` 절에서 데이터를 저장 할 객체를 만든다
+    - `when` 절에서 저장 할 객체를 저장한다. 저장하기 전, DB 내부에 이미 등록 된 데이터가 존재하는지 확인한다
+    - `then` 절에서 저장 후 결과를 확인한다
+    - 이미 등록된 데이터가 존재하면 저장하지 않고, 저장 되어있는 값을 반환 해 준다 (에러가 나게 Exception을 넣어주어도 무방)
+- 테스트코드의 빨간줄을 모두 없앨 수 있도록 Repository 내부에 쿼리를 추가 해 준다
+  ```kotlin
+  // AssociationRepository.kt
+  /*
+   * 상위코드 생략
+   */
+  fun findByUserUuidAndAssociateName(userUuid: String, associateName: AssociationName): Association?
+  ```
+
+- 다시 테스트를 진행 해 보면, 성공이 된 것을 알 수 있다
