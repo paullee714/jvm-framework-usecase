@@ -52,6 +52,13 @@
 - H2
 - Spring Data JPA
 
+## Mock 테스트!!! ** 중요
+- Java로 진행하는 사람들은 크게 상관이 없지만, Kotlin을 사용한다면 Mockito는 사용하지 않는것이 좋다
+- Mockito는 Kotlin과 만났을 경우 Java객체를 Null로 잡는 문제가 있다
+- 테스트 과정 중, 객체 자체가 필요한 경우가 있는데 Java 객체 자체를 Null로 잡기때문에 에러가 발생 할 수 있음
+- Mockk 혹은 mockito-kotlin 을 사용하는 것을 추천한다
+- 아래 글에서 repository 테스트까지는 일만 mockito로 상관이 없었는데, 끝으로 갈 수록 적용이 어려워져서 결국 service테스트에서 mockito-kotlin으로 틀었다
+
 ### DB세팅
 
 - 개인 Docker-compose에 Maria DB를 설치하여 사용한다
@@ -221,7 +228,6 @@ class AssociationRepositoryTest {
 
       // then
       assertThat(result.id).isNotNull()
-      assertThat(result.id).isEqualTo(1)
       assertThat(result.associateName).isEqualTo("KFC")
       assertThat(result.userUuid).isEqualTo("uuid-wool-1")
       assertThat(result.point).isEqualTo(0)
@@ -427,3 +433,8 @@ class AssociationRepositoryTest {
           return null
       }
   ```
+
+### AssociationService.kt - 저장 성공 로직 테스트
+- 위에서 중복체크 로직이 작성 되었으므로, 이제는 저장에 성공하는 테스트를 작성하려고 한다
+- 테스트코드를 먼저 작성한다
+- 가장 위에서 말했던 Java 객체를 null로 잡는 문제 때문에 `mockito-kotlin`으로 전환한다
