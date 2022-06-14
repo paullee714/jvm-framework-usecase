@@ -1,40 +1,53 @@
 package com.example.springkotlintddsimple.service
 
+
 import com.example.springkotlintddsimple.domain.Association
 import com.example.springkotlintddsimple.domain.AssociationName
 import com.example.springkotlintddsimple.handler.AssociationErrorResult
 import com.example.springkotlintddsimple.handler.exception.AssociationException
 import com.example.springkotlintddsimple.repository.AssociationRepository
-import org.junit.jupiter.api.Assertions.assertThrows
+import io.mockk.MockKAnnotations
+import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.InjectMocks
-import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.kotlin.doReturn
 
 
 @ExtendWith(MockitoExtension::class)
 class AssociationServiceTest {
 
-    @Mock
+    @MockK
     lateinit var associationRepository: AssociationRepository
 
-    @InjectMocks
+    @InjectMockKs
     lateinit var associationService: AssociationService
+
 
     var userUuid: String = "uuid-wool-1"
     var associationName: AssociationName = AssociationName.SUBWAY
     var point: Int = 100
 
+    @BeforeEach
+    fun init() {
+        MockKAnnotations.init(this)
+    }
 
     @Test
     fun associateRegistrationAlreadyExists() {
         // given
-        doReturn(Association(1, associationName, userUuid, point)).`when`(associationRepository)
-            .findByUserUuidAndAssociateName(userUuid, associationName)
+        every {
+            associationRepository.findByUserUuidAndAssociateName(userUuid, associationName)
+        } returns Association(
+            1,
+            associationName,
+            userUuid,
+            point
+        )
 
         // when
         val result: AssociationException = assertThrows(
