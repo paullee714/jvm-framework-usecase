@@ -20,7 +20,9 @@ class AssociationService(private val associationRepository: AssociationRepositor
         if (result != null) {
             throw AssociationException(AssociationErrorResult.DUPLICATED_ASSOCIATION_FOUND)
         }
-        return null
+
+        val association: Association = Association(null, associationName, userUuid, point)
+        return associationRepository.save(association)
     }
 
 }
