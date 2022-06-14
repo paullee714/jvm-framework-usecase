@@ -60,4 +60,28 @@ class AssociationServiceTest {
         assertThat(result.errorResult).isEqualTo(AssociationErrorResult.DUPLICATED_ASSOCIATION_FOUND)
     }
 
+    @Test
+    fun associateRegistrationSuccess() {
+        // given
+
+        every { associationRepository.findByUserUuidAndAssociateName(userUuid, associationName) } returns null
+        every { associationRepository.save(any<Association>()) } returns Association(
+            1,
+            associationName,
+            userUuid,
+            point
+        )
+
+
+        // when
+        val result: Association? = associationService.registAssociation(userUuid, associationName, point)
+        println(result)
+
+        // then
+        assertThat(result?.id).isNotNull
+        assertThat(result?.userUuid).isEqualTo(userUuid)
+        assertThat(result?.associateName).isEqualTo(AssociationName.SUBWAY)
+    }
+
+
 }
