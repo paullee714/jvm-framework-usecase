@@ -451,4 +451,45 @@ class AssociationRepositoryTest {
 
 - 위에서 중복체크 로직이 작성 되었으므로, 이제는 저장에 성공하는 테스트를 작성하려고 한다
 - 테스트코드를 먼저 작성한다
-- 가장 위에서 말했던 Java 객체를 null로 잡는 문제 때문에 `mockito-kotlin`으로 전환한다
+- 가장 위에서 말했던 Java 객체를 null로 잡는 문제 때문에 `mockK`으로 전환한다
+  ```kotlin
+  @Test
+  fun associateRegistrationSuccess() {
+      // given
+
+      every { associationRepository.findByUserUuidAndAssociateName(userUuid, associationName) } returns null
+      every { associationRepository.save(any<Association>()) } returns Association(
+          1,
+          associationName,
+          userUuid,
+          point
+      )
+
+
+      // when
+      val result: Association? = associationService.registAssociation(userUuid, associationName, point)
+      println(result)
+
+      // then
+      assertThat(result?.id).isNotNull
+      assertThat(result?.userUuid).isEqualTo(userUuid)
+      assertThat(result?.associateName).isEqualTo(AssociationName.SUBWAY)
+  }
+  ```
+- 해당 테스트코드를 실행하면 registAssociation 코드의 retrun값 때문에 null이 반환되어 에러가 난다. 이 부분을 수정하자
+  ```kotlin
+  //service
+  fun registAssociation(userUuid: String, associationName: AssociationName, point: Int): Association? {
+
+    val result: Association? = associationRepository.findByUserUuidAndAssociateName(userUuid, associationName)
+
+    if (result != null) {
+      throw AssociationException(AssociationErrorResult.DUPLICATED_ASSOCIATION_FOUND)
+    }
+
+    val association: Association = Association(null, associationName, userUuid, point)
+    return associationRepository.save(association)
+  }
+  ```
+  - 기존의 코드에서 association을 save, return하는 역할을 추가했다
+  - 테스트코드를 돌려보면 성공!
