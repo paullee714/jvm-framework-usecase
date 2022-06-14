@@ -53,11 +53,12 @@
 - Spring Data JPA
 
 ## Mock 테스트!!! ** 중요
+
 - Java로 진행하는 사람들은 크게 상관이 없지만, Kotlin을 사용한다면 Mockito는 사용하지 않는것이 좋다
 - Mockito는 Kotlin과 만났을 경우 Java객체를 Null로 잡는 문제가 있다
 - 테스트 과정 중, 객체 자체가 필요한 경우가 있는데 Java 객체 자체를 Null로 잡기때문에 에러가 발생 할 수 있음
 - Mockk 혹은 mockito-kotlin 을 사용하는 것을 추천한다
-- 아래 글에서 repository 테스트까지는 일만 mockito로 상관이 없었는데, 끝으로 갈 수록 적용이 어려워져서 결국 service테스트에서 mockito-kotlin으로 틀었다
+- 아래 글에서 repository 테스트까지는 일만 mockito로 상관이 없었는데, 끝으로 갈 수록 적용이 어려워져서 결국 service테스트에서 `Mockk`으로 틀었다
 
 ### DB세팅
 
@@ -322,18 +323,19 @@ class AssociationRepositoryTest {
 
 - 방금까지 Repository와 관련된 테스트를 진행했다
 - 서비스 계층에서는 Repository 계층을 사용하기보다는 mock 기반으로 테스트를 작성해주자
+- 여기서부터 일전에 얘기를 미리 나누었던 Mockito와 Kotlin 간의 문제가 생겨, 테스트코드를 모두 `Mockk` 기반으로 바꾸었다
+    - Repo 테스트는 크게 사용한 테스트 Mock의 기능이 없어서 바꾸지 않아도 된다
 
 ### AssociationServiceTest.kt 작성하기
 
 - AssociationServiceTest를 작성해서 Service단의 로직들을 작성하자
-- `Mockito`의 패키지들을 가져와서, 테스트에 Mock 을 주입 해 주자 -> `@ExtendWith(MockitoExtension::class)`
+- `MockK`의 패키지들을 가져와서, 테스트에 Mock 을 주입 해 주자 -> `@ExtendWith(MockitoExtension::class)`
   ```kotlin
   @ExtendWith(MockitoExtension::class)
   class AssociationServiceTest {
       var userUuid: String = "uuid-wool-1"
       var associationName: AssociationName = AssociationName.SUBWAY
       var point: Int = 100
-
 
       @Test
       fun associateRegistrationAlreadyExists() {
@@ -348,45 +350,55 @@ class AssociationRepositoryTest {
   ```kotlin
   @ExtendWith(MockitoExtension::class)
   class AssociationServiceTest {
-      var userUuid: String = "uuid-wool-1"
-      var associationName: AssociationName = AssociationName.SUBWAY
-      var point: Int = 100
 
+    var userUuid: String = "uuid-wool-1"
+    var associationName: AssociationName = AssociationName.SUBWAY
+    var point: Int = 100
 
-      @Test
-      fun associateRegistrationAlreadyExists() {
-          // given
-          doReturn(Association(1, associationName, userUuid, point)).`when`(associationRepository)
-              .findByUserUuidAndAssociateName(userUuid, associationName)
+    @Test
+    fun associateRegistrationAlreadyExists() {
+      // given
+      every {
+        associationRepository.findByUserUuidAndAssociateName(userUuid, associationName)
+      } returns Association(
+        1,
+        associationName,
+        userUuid,
+        point
+      )
 
-          // when
-          val result: AssociationException = assertThrows(
-              AssociationException::class.java
-          ) {
-              associationService.registAssociation(userUuid, associationName, point)
-          }
-
-          // then
-          assertThat(result.errorResult).isEqualTo(AssociationErrorResult.DUPLICATED_ASSOCIATION_FOUND)
+      // when
+      val result: AssociationException = assertThrows(
+        AssociationException::class.java
+      ) {
+        associationService.registAssociation(userUuid, associationName, point)
       }
 
+      // then
+      assertThat(result.errorResult).isEqualTo(AssociationErrorResult.DUPLICATED_ASSOCIATION_FOUND)
+    }
   }
   ```
     - 미리 작성 할 로직들을 테스트코드에 담아놓았다 (이미 무더기로 빨간줄..)
     - 이제 빨간줄을 하나씩 해결하기위해서 주입시킬 코드를 하나씩 체크하자
     - 가장먼저 아래의 Mock객체를 주입하고 이미 작성되어있는 Repository 외에 Service를 소스 페이지에 작성 해 준다
       ```kotlin
-      // Mock 객체 주입
-      @Mock
+      // Mock 객체 주입 및 MockK 초기화
+      @MockK
       lateinit var associationRepository: AssociationRepository
 
-      @InjectMocks
+      @InjectMockKs
       lateinit var associationService: AssociationService
+
+      @BeforeEach
+      fun init(){
+          MockKAnnotations.init(this)
+      }
       ```
       ```kotlin
       // src하위의 service 패키지내부
       @Service
-      class AssociationService {
+      class AssociationService(private val associationRepository: AssociationRepository) {
 
           lateinit var associationRepository: AssociationRepository
 
@@ -415,6 +427,7 @@ class AssociationRepositoryTest {
       ```
 
 ### AssociationService.kt 서비스 로직 추가하기
+
 - 현재 리턴값은 null이기 때문에 서비스로직에서 아무것도 하지 않는다
   ```kotlin
       fun registAssociation(userUuid: String, associationName: AssociationName, point: Int): Association? {
@@ -435,6 +448,7 @@ class AssociationRepositoryTest {
   ```
 
 ### AssociationService.kt - 저장 성공 로직 테스트
+
 - 위에서 중복체크 로직이 작성 되었으므로, 이제는 저장에 성공하는 테스트를 작성하려고 한다
 - 테스트코드를 먼저 작성한다
 - 가장 위에서 말했던 Java 객체를 null로 잡는 문제 때문에 `mockito-kotlin`으로 전환한다
