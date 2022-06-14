@@ -30,7 +30,6 @@ class AssociationRepositoryTest {
         // then
         println(result)
         assertThat(result.id).isNotNull()
-        assertThat(result.id).isEqualTo(1)
         assertThat(result.associateName).isEqualTo(AssociationName.KFC)
         assertThat(result.userUuid).isEqualTo("uuid-wool-1")
         assertThat(result.point).isEqualTo(0)
