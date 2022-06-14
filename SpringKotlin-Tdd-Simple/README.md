@@ -311,3 +311,119 @@ class AssociationRepositoryTest {
   ```
 
 - 다시 테스트를 진행 해 보면, 성공이 된 것을 알 수 있다
+
+## Service 테스트하기
+
+- 방금까지 Repository와 관련된 테스트를 진행했다
+- 서비스 계층에서는 Repository 계층을 사용하기보다는 mock 기반으로 테스트를 작성해주자
+
+### AssociationServiceTest.kt 작성하기
+
+- AssociationServiceTest를 작성해서 Service단의 로직들을 작성하자
+- `Mockito`의 패키지들을 가져와서, 테스트에 Mock 을 주입 해 주자 -> `@ExtendWith(MockitoExtension::class)`
+  ```kotlin
+  @ExtendWith(MockitoExtension::class)
+  class AssociationServiceTest {
+      var userUuid: String = "uuid-wool-1"
+      var associationName: AssociationName = AssociationName.SUBWAY
+      var point: Int = 100
+
+
+      @Test
+      fun associateRegistrationAlreadyExists() {
+      }
+  }
+  ```
+
+### AssociationServiceTest.kt 테스트 케이스 만들기 - 구현 할 service 뼈대만들기
+
+- 가장 먼저 할 것은 AssociationServiceTest의 기본 테스트케이스를 만드는 것 이다
+- Repository 개발 당시와 동일하게, Test작성 -> Service코드 수정 순서대로 가려고한다 (아직도 붉은줄에 익숙하지 않다..)
+  ```kotlin
+  @ExtendWith(MockitoExtension::class)
+  class AssociationServiceTest {
+      var userUuid: String = "uuid-wool-1"
+      var associationName: AssociationName = AssociationName.SUBWAY
+      var point: Int = 100
+
+
+      @Test
+      fun associateRegistrationAlreadyExists() {
+          // given
+          doReturn(Association(1, associationName, userUuid, point)).`when`(associationRepository)
+              .findByUserUuidAndAssociateName(userUuid, associationName)
+
+          // when
+          val result: AssociationException = assertThrows(
+              AssociationException::class.java
+          ) {
+              associationService.registAssociation(userUuid, associationName, point)
+          }
+
+          // then
+          assertThat(result.errorResult).isEqualTo(AssociationErrorResult.DUPLICATED_ASSOCIATION_FOUND)
+      }
+
+  }
+  ```
+    - 미리 작성 할 로직들을 테스트코드에 담아놓았다 (이미 무더기로 빨간줄..)
+    - 이제 빨간줄을 하나씩 해결하기위해서 주입시킬 코드를 하나씩 체크하자
+    - 가장먼저 아래의 Mock객체를 주입하고 이미 작성되어있는 Repository 외에 Service를 소스 페이지에 작성 해 준다
+      ```kotlin
+      // Mock 객체 주입
+      @Mock
+      lateinit var associationRepository: AssociationRepository
+
+      @InjectMocks
+      lateinit var associationService: AssociationService
+      ```
+      ```kotlin
+      // src하위의 service 패키지내부
+      @Service
+      class AssociationService {
+
+          lateinit var associationRepository: AssociationRepository
+
+          fun registAssociation(userUuid: String, associationName: AssociationName, point: Int): Association? {
+
+              return null
+          }
+      }
+      ```
+    - 테스트코드에서 에러핸들링 때 사용한 `AssociationException`, `AssociationErrorResult` 을 작성 해 주자.
+    - AssociationException는 Exception을 반환하기 때문에 RuntimeException을 상속하는 클래스로 작성하고, AssociationErrorResult는 Result를 정형화 해서
+      반환 할 수 있도록 Enum 클래스로 작성 해 준다
+      ```kotlin
+      @Getter
+      @RequiredArgsConstructor
+      class AssociationException(duplicatedAssociationFound: AssociationErrorResult) : RuntimeException() {
+          val errorResult: AssociationErrorResult = duplicatedAssociationFound
+      }
+      ```
+
+    - Exception, ErrorResult 반환값들을 잘 설정했으니 이제 나머지 testCode들이 잘 작동하는지 확인하자
+    - 테스트코드에 패키지 import 들을 잘 넣어주고 테스트 코드를 실행 해 본다
+    - Service 로직에 아무것도 작성이 되어있지 않기 때문에 아래와 같이 오류가 발생한다
+      ```
+      org.opentest4j.AssertionFailedError: Expected com.example.springkotlintddsimple.handler.exception.AssociationException to be thrown, but nothing was thrown.
+      ```
+
+### AssociationService.kt 서비스 로직 추가하기
+- 현재 리턴값은 null이기 때문에 서비스로직에서 아무것도 하지 않는다
+  ```kotlin
+      fun registAssociation(userUuid: String, associationName: AssociationName, point: Int): Association? {
+          return null
+      }
+  ```
+- 위의 코드에 `return null` 대신, 내부에 로직을 작성하여 실제로 동작 할 수 있도록 수정한다
+  ```kotlin
+      fun registAssociation(userUuid: String, associationName: AssociationName, point: Int): Association? {
+
+          val result: Association? = associationRepository.findByUserUuidAndAssociateName(userUuid, associationName)
+
+          if (result != null) {
+              throw AssociationException(AssociationErrorResult.DUPLICATED_ASSOCIATION_FOUND)
+          }
+          return null
+      }
+  ```
