@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service
 
 
 @Service
-class AssociationService(private val associationRepository: AssociationRepository) {
+class AssociationService {
+
+    private lateinit var associationRepository: AssociationRepository
 
 
     fun registAssociation(userUuid: String, associationName: AssociationName, point: Int): Association? {
