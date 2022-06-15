@@ -505,14 +505,16 @@ class AssociationRepositoryTest {
 - 가장먼저, `AssociationControllerTest`에 Mock이 잘 설정이 되는지 테스트하는 코드를 작성한다
   ```kotlin
   @ExtendWith(MockitoExtension::class)
-  class AssociationControllerTest{
+  class AssociationControllerTest {
 
+      @MockK
+      var associationRepository: AssociationRepository = mockk<AssociationRepository>(relaxed = true)
 
       @InjectMockKs
       private var associationController: AssociationController = AssociationController()
 
       @InjectMockKs
-      private var associationService: AssociationService = AssociationService()
+      private var associationService: AssociationService = AssociationService(associationRepository)
 
       private lateinit var mockMvc: MockMvc
 
@@ -533,7 +535,5 @@ class AssociationRepositoryTest {
       }
   }
   ```
-  - 글을 처음부 따라왔다면 `AssociationService` 클래스에 `repository`를 클래스 선언부에 같이 넣어서 생성 해 주었다
-  - 클래스 선언부를 지워주고 내부에 `lateinit` 으로 repository를 다시 선언 해 준 후에 위와같이 테스트 코드를 적어주자
   - `@BeforeEach`는 테스트가 실행되기 가장 전에 시작하는 메서드로, 현재 테스트에서 사용 할 변수들을 초기화 해 준다
   - 위의 코드가 성공적으로 돌아가면, Controller 테스트 준비는 끝났다
