@@ -493,3 +493,47 @@ class AssociationRepositoryTest {
   ```
   - 기존의 코드에서 association을 save, return하는 역할을 추가했다
   - 테스트코드를 돌려보면 성공!
+
+
+## Controller 테스트
+- 컨트롤러는 API가 어떻게 요청하는지 규약에 대한 부분과 return명세에 대한 부분을 확실히 잡을 수 있다
+- 우선 컨트롤러 테스트코드를 작성 하고 테스트를 하며 코드를 작성하고자 한다
+
+### AssociationControllerTest.kt 컨트롤러 테스트코드 작성
+- test에 `controller`패키지를 만들어 `AssociationControllerTest`클래스를 생성한다
+- 클래스에서 Mock을 적용할 컨트롤러가 필요하기때문에 src하위에 `AssociationController`를 작성 해 준다
+- 가장먼저, `AssociationControllerTest`에 Mock이 잘 설정이 되는지 테스트하는 코드를 작성한다
+  ```kotlin
+  @ExtendWith(MockitoExtension::class)
+  class AssociationControllerTest{
+
+
+      @InjectMockKs
+      private var associationController: AssociationController = AssociationController()
+
+      @InjectMockKs
+      private var associationService: AssociationService = AssociationService()
+
+      private lateinit var mockMvc: MockMvc
+
+      private lateinit var gson: Gson
+
+
+      @BeforeEach
+      fun init() {
+          mockMvc = MockMvcBuilders.standaloneSetup(associationController).build()
+      }
+
+      @Test
+      fun mockMvcIsNotNull() {
+
+          assertThat(associationController).isNotNull
+          assertThat(mockMvc).isNotNull
+
+      }
+  }
+  ```
+  - 글을 처음부 따라왔다면 `AssociationService` 클래스에 `repository`를 클래스 선언부에 같이 넣어서 생성 해 주었다
+  - 클래스 선언부를 지워주고 내부에 `lateinit` 으로 repository를 다시 선언 해 준 후에 위와같이 테스트 코드를 적어주자
+  - `@BeforeEach`는 테스트가 실행되기 가장 전에 시작하는 메서드로, 현재 테스트에서 사용 할 변수들을 초기화 해 준다
+  - 위의 코드가 성공적으로 돌아가면, Controller 테스트 준비는 끝났다
