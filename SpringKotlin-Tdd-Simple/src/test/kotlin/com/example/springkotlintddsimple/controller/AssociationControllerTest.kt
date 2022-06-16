@@ -1,5 +1,8 @@
 package com.example.springkotlintddsimple.controller
 
+import com.example.springkotlintddsimple.domain.Association
+import com.example.springkotlintddsimple.domain.AssociationName
+import com.example.springkotlintddsimple.domain.dto.AssociationRequest
 import com.example.springkotlintddsimple.repository.AssociationRepository
 import com.example.springkotlintddsimple.service.AssociationService
 import com.google.gson.Gson
@@ -11,7 +14,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
+import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.ResultActions
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
 @ExtendWith(MockitoExtension::class)
@@ -33,6 +40,7 @@ class AssociationControllerTest {
 
     @BeforeEach
     fun init() {
+        gson = Gson()
         mockMvc = MockMvcBuilders.standaloneSetup(associationController).build()
     }
 
@@ -43,4 +51,20 @@ class AssociationControllerTest {
         assertThat(mockMvc).isNotNull
 
     }
+
+    @Test
+    fun associationRegisterFailWithNoHeader() {
+        val reqUrl: String = "/api/v1/association"
+
+        val associationRequest: AssociationRequest = AssociationRequest(5000, AssociationName.SUBWAY)
+
+        val resultActions: ResultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post(reqUrl)
+                .content(gson.toJson(associationRequest))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        resultActions.andExpect(status().isBadRequest)
+    }
+
 }
