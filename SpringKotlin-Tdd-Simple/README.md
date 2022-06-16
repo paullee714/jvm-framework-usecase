@@ -537,3 +537,51 @@ class AssociationRepositoryTest {
   ```
   - `@BeforeEach`는 테스트가 실행되기 가장 전에 시작하는 메서드로, 현재 테스트에서 사용 할 변수들을 초기화 해 준다
   - 위의 코드가 성공적으로 돌아가면, Controller 테스트 준비는 끝났다
+
+### AssociationControllerTest.kt 컨트롤러 요청 실패 케이스 작성
+- 가장먼저 저장이 실패하는 케이스를 작성하도록 하자
+- Header에 사용자의 uuid를 담기로 하고, 해당하는 uuid에 따라 request 처리를 해 주자
+- 제휴사 등록의 경우에 필요한 데이터를 정의하고 객체로 만들어 associationRequest에 담아 처리하려고 한다
+- 먼저 테스트케이스 코드를 작성한 후, 컴파일 에러가 나는 곳을 하나씩 수정하자
+  ```kotlin
+  @Test
+  fun associationRegisterFailWithNoHeader() {
+      val reqUrl: String = "/api/v1/association"
+
+      val associationRequest: AssociationRequest = AssociationRequest(5000, AssociationName.SUBWAY)
+
+      val resultActions: ResultActions = mockMvc.perform(
+          MockMvcRequestBuilders.post(reqUrl)
+              .content(gson.toJson(associationRequest))
+              .contentType(MediaType.APPLICATION_JSON)
+      )
+
+      resultActions.andExpect(status().isBadRequest)
+  }
+  ```
+  - 작성 후 컴파일 에러가 나는곳은 `AssociationRequest` 객체이기 때문에 먼저 `AssociationRequest` 객체 작성한다
+  - `AssociationRequest` 객체는 domain아래에 dto로 작성한다
+    ```kotlin
+    data class AssociationRequest(
+        val point: Int,
+        val associationName: AssociationName,
+    )
+    ```
+  - 이제 `AssociationRequest` 객체를 import 해 주고, 테스트케이스를 실행하면 오류가난다.(당연히... api 주소를 생성하지 않았으니까...)
+  - Controller에 `@RestController` 를 설정해서 API주소를 테스트코드에서 선언한 `/api/v1/association` 로 만들어 준다
+    ```kotlin
+    @RestController
+    class AssociationController {
+
+        @PostMapping("/api/v1/association")
+        fun createAssociation(
+            @RequestHeader("USER_UUID") user_UUID: String,
+            @RequestBody associationRequest: AssociationRequest,
+        ): ResponseEntity<AssociationRequest> {
+
+            return ResponseEntity.status(HttpStatus.CREATED).build()
+        }
+    }
+    ```
+  - 테스트코드를 실행 해보면 api 주소가 존재하기때문에 request가 될 것이지만 `header`에 필요한 데이터가 없어서 예상했던 전송오류가 나면서 테스트는 성공이 된다
+  - 이제 실패케이스를 좀 더 생각해보면서 테스트케이스를 추가 해 나가면 된다
