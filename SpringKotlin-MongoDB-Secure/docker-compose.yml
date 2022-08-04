@@ -1,0 +1,11 @@
+version: "3"
+services:
+  mongo-docker:
+    image: arm64v8/mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - .mongo/data/mongo:/data/db
+    container_name: "spring-mongo-secure"
+    env_file:
+      - .mongo_env
