@@ -1,0 +1,36 @@
+version: "3"
+services:
+  mariadb:
+    image: arm64v8/mariadb
+    ports:
+      - "3306:3306"
+    environment:
+      TZ: Asia/Seoul
+      MYSQL_ROOT_PASSWORD: qwerqwer123
+      MYSQL_DATABASE: paul
+      MYSQL_USER: paul
+      MYSQL_PASSWORD: qwerqwer123
+    container_name: "mariadb"
+    volumes:
+      - .db/mysql:/var/lib/mysql
+
+  mongodb:
+    image: arm64v8/mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - .db/mongo:/data/db
+    container_name: "docker-mongodb"
+    env_file:
+      - .mongo_env
+
+  postgresdb:
+    image: postgres:14-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - .db/postgresql:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=paul
+      - POSTGRES_PASSWORD=qwerqwer123
+      - POSTGRES_DB=paul
