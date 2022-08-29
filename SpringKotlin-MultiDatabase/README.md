@@ -532,6 +532,46 @@ class IoTController(
 
 ```
 
+### 몽고디비 or Document DB config 보안관련
+- 각 회사나 일부 프로젝트에서는 CA 파일을 설정하여 연결을 요구할 수 있다 그때에는 아래와 같은 코드로 SSLConfig 를 추가하면 된다
+```kotlin
+override fun getDatabaseName(): String {
+        return "umos_fii_dev"
+    }
+
+override fun mongoClient(): MongoClient {
+
+    val trustStorePath = "./auth"
+
+    val keyStore: KeyStore = KeyStore.getInstance(KeyStore.getDefaultType())
+
+    keyStore.load(null)
+
+    val certF: CertificateFactory = CertificateFactory.getInstance("X.509")
+
+    val cert: Certificate = certF.generateCertificate(URL("https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem").openStream())
+    keyStore.setCertificateEntry("mongo-cert", cert)
+
+    FileOutputStream(trustStorePath).use { out -> keyStore.store(out, "pass".toCharArray()) }
+
+    val trustManagerFactory: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+    trustManagerFactory.init(keyStore)
+
+    val sslContext = SSLContext.getInstance("TLS")
+    sslContext.init(null, trustManagerFactory.getTrustManagers(), SecureRandom())
+
+    val builder = MongoClientSettings.builder()
+        .applyConnectionString(ConnectionString("mongodb-url"))
+        .applyToSslSettings { b: SslSettings.Builder ->
+            b.enabled(true)
+            b.context(sslContext)
+        }
+        .build()
+
+    return MongoClients.create(builder)
+}
+ ```
+
 ## 확인하기
 - 스프링부트 서버를 실행시키고, 잘 동작하는지 확인한다
 - application properties에 작성했었던 Configuration 값들을 config 패키지를 만들어 내부로 이동시켰다
