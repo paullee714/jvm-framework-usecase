@@ -536,7 +536,7 @@ class IoTController(
 - 각 회사나 일부 프로젝트에서는 CA 파일을 설정하여 연결을 요구할 수 있다 그때에는 아래와 같은 코드로 SSLConfig 를 추가하면 된다
 ```kotlin
 override fun getDatabaseName(): String {
-        return "umos_fii_dev"
+        return "DB이름"
     }
 
 override fun mongoClient(): MongoClient {
