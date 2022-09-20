@@ -1,0 +1,5 @@
+heroku_api_key: ${{ secrets.HEROKU_DEPLOY_KEY }}
+
+heroku_email: paul_lee@kakao.com
+
+heroku_app_name: "spring-sns-paul"
