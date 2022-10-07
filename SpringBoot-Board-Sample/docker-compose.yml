@@ -1,0 +1,15 @@
+version: "3"
+services:
+  mysql-docker:
+    image: arm64v8/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      TZ: Asia/Seoul
+      MYSQL_ROOT_PASSWORD: qwerqwer123
+      MYSQL_DATABASE: springboard
+      MYSQL_USER: paul
+      MYSQL_PASSWORD: qwerqwer123
+    container_name: "springboard-mysql"
+    volumes:
+      - .mysql/data/mysql:/var/lib/mysql

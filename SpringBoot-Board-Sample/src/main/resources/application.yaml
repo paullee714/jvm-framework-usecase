@@ -1,0 +1,50 @@
+debug: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+
+logging:
+  level:
+    com.baul.springbootboardsample: debug
+    org.springframework.web: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/springboard?serverTimezone=UTC&useSSL=false
+    username: paul
+    password: qwerqwer123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+  h2:
+    console:
+      enabled: false
+  sql:
+    init:
+      mode: always
+
+#---
+#
+#spring:
+#  config:
+#    activate:
+#      on-profile: testdb
+#  datasource:
+#    url: jdbc:h2:mem:springboard;mode=mysql
+#    driver-class-name: org.h2.Driver
+#  sql:
+#    init:
+#      mode: always
+#  test.database.replace: NONE
