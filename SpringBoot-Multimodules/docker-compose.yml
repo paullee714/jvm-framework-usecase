@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    container_name: multimodule-postgres
+    ports:
+      - "9876:5432"
+    volumes:
+      - .postgresql/:/var/lib/postgresql/data
+      - ./local-db/init_schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+
+    environment:
+      - POSTGRES_PASSWORD=password1234
+      - POSTGRES_USER=wool
+      - POSTGRES_DB=wooldb

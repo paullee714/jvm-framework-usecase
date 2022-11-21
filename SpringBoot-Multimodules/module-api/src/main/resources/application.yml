@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    hikari:
+      pool-name: HikariCp
+      maximum-pool-size: 2
+      minimum-idle: 2
+    username: wool
+    password: password1234
+    url: jdbc:postgresql://localhost:9876/wooldb
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: springtest
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
