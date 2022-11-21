@@ -38,3 +38,5 @@ out/
 
 ### custom DTAT
 .postgresql
+
+.DS_Store
