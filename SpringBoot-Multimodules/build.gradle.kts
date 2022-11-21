@@ -84,7 +84,7 @@ project(":module-api") {
     }
 }
 
-project(":module-consumer") {
+project(":module-stream") {
     dependencies {
         implementation(project(":module-core"))
     }

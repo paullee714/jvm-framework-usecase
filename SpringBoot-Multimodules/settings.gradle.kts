@@ -1,4 +1,4 @@
 rootProject.name = "SpringBoot-Multimodules"
-include("module-consumer")
+include("module-stream")
 include("module-api")
 include("module-core")
