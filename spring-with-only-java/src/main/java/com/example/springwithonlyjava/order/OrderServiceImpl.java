@@ -1,15 +1,18 @@
 package com.example.springwithonlyjava.order;
 
 import com.example.springwithonlyjava.discount.DiscountPolicy;
-import com.example.springwithonlyjava.discount.FixDiscountPolicy;
 import com.example.springwithonlyjava.member.Member;
 import com.example.springwithonlyjava.member.MemberRepository;
-import com.example.springwithonlyjava.member.MemoryMemberRepsoitory;
 
-public class OrderServiceImpl implements OrderService{
+public class OrderServiceImpl implements OrderService {
 
-    private final MemberRepository memberRepository = new MemoryMemberRepsoitory();
-    private final DiscountPolicy discountPolicy = new FixDiscountPolicy();
+    private final MemberRepository memberRepository;
+    private final DiscountPolicy discountPolicy;
+
+    public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
+        this.memberRepository = memberRepository;
+        this.discountPolicy = discountPolicy;
+    }
 
     @Override
     public Order createOrder(Long memberId, String itemName, int itemPrice) {
